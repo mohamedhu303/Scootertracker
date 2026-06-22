@@ -1,0 +1,168 @@
+<div class="page-container">
+
+  @if (successMessage) {
+    <div class="success-toast">
+      <span class="material-icons">check_circle</span>
+      {{ successMessage }}
+    </div>
+  }
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Tariffs Management</h1>
+      <p>Manage pricing plans for rides</p>
+    </div>
+    <button class="add-btn" (click)="openAddDialog()">
+      <span class="material-icons">add</span>
+      Add Tariff
+    </button>
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading tariffs...</p>
+    </div>
+  }
+
+  <!-- Cards -->
+  @if (!isLoading) {
+    @if (tariffs.length === 0) {
+      <div class="empty-state">
+        <span class="material-icons">payments</span>
+        <h3>No tariffs yet</h3>
+        <p>Create your first pricing plan</p>
+      </div>
+    }
+
+    <div class="tariffs-grid">
+      @for (tariff of tariffs; track tariff.id) {
+        <div
+          class="tariff-card"
+          [class.active-tariff]="tariff.isActive"
+          [class.loading]="actionLoading === tariff.id"
+        >
+          @if (tariff.isActive) {
+            <div class="active-ribbon">
+              <span class="material-icons">star</span>
+              Active
+            </div>
+          }
+
+          <div class="tariff-header">
+            <h3>{{ tariff.name }}</h3>
+            <span class="tariff-id">{{ tariff.id }}</span>
+          </div>
+
+          <div class="tariff-pricing">
+            <div class="price-item">
+              <span class="price-label">Unlock Fee</span>
+              <span class="price-value">{{ tariff.unlockFee }} EGP</span>
+            </div>
+            <div class="price-divider"></div>
+            <div class="price-item">
+              <span class="price-label">Per Minute</span>
+              <span class="price-value">{{ tariff.perMinuteRate }} EGP</span>
+            </div>
+          </div>
+
+          <div class="tariff-meta">
+            <span class="material-icons">calendar_today</span>
+            Created: {{ tariff.createdAt | date:'mediumDate' }}
+          </div>
+
+          <div class="tariff-actions">
+            @if (!tariff.isActive) {
+              <button class="activate-btn" (click)="activateTariff(tariff)">
+                <span class="material-icons">check_circle</span>
+                Set as Active
+              </button>
+              <button class="delete-btn" (click)="deleteTariff(tariff)">
+                <span class="material-icons">delete</span>
+              </button>
+            } @else {
+              <span class="current-label">
+                <span class="material-icons">verified</span>
+                Currently Active
+              </span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Add Dialog -->
+@if (showAddDialog) {
+  <div class="dialog-backdrop" (click)="closeAddDialog()">
+    <div class="dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h3>
+          <span class="material-icons">add_circle</span>
+          Create New Tariff
+        </h3>
+        <button class="close-btn" (click)="closeAddDialog()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <div class="dialog-body">
+        @if (errorMessage) {
+          <div class="error-alert">
+            <span class="material-icons">error</span>
+            {{ errorMessage }}
+          </div>
+        }
+
+        <div class="form-group">
+          <label>Tariff Name <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="formData.name" placeholder="e.g., Standard, Weekend Special" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Unlock Fee (EGP) <span class="required">*</span></label>
+            <input type="number" [(ngModel)]="formData.unlockFee" placeholder="5" min="0" step="0.5" />
+          </div>
+          <div class="form-group">
+            <label>Per Minute Rate (EGP) <span class="required">*</span></label>
+            <input type="number" [(ngModel)]="formData.perMinuteRate" placeholder="1.5" min="0" step="0.1" />
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="pricing-preview">
+          <h4>Pricing Preview</h4>
+          <div class="preview-row">
+            <span>10 min ride:</span>
+            <span>{{ formData.unlockFee + (formData.perMinuteRate * 10) | number:'1.2-2' }} EGP</span>
+          </div>
+          <div class="preview-row">
+            <span>20 min ride:</span>
+            <span>{{ formData.unlockFee + (formData.perMinuteRate * 20) | number:'1.2-2' }} EGP</span>
+          </div>
+          <div class="preview-row">
+            <span>30 min ride:</span>
+            <span>{{ formData.unlockFee + (formData.perMinuteRate * 30) | number:'1.2-2' }} EGP</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="dialog-footer">
+        <button class="cancel-btn" (click)="closeAddDialog()">Cancel</button>
+        <button class="save-btn" (click)="createTariff()" [disabled]="addLoading">
+          @if (addLoading) {
+            <div class="spinner-small"></div>
+            Creating...
+          } @else {
+            <span class="material-icons">save</span>
+            Create Tariff
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,325 @@
+<div class="page-container">
+
+  <!-- Profile Hero -->
+  <div class="profile-hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <div class="avatar-wrapper">
+        <div class="profile-avatar">
+          {{ displayName.charAt(0) }}
+        </div>
+        <div class="avatar-status"></div>
+      </div>
+      <div class="hero-info">
+        <h1>{{ displayName }}</h1>
+        <p class="hero-email">
+          <span class="material-icons">email</span>
+          {{ displayEmail }}
+        </p>
+        @if (displayPhone) {
+          <p class="hero-phone">
+            <span class="material-icons">phone</span>
+            {{ displayPhone }}
+          </p>
+        }
+        <div class="hero-badges">
+          <span class="role-badge">
+            <span class="material-icons">shield</span>
+            Administrator
+          </span>
+          <span class="status-badge active">
+            <span class="dot"></span>
+            {{ displayStatus }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-body">
+    <div class="profile-main">
+
+      <!-- Quick Stats -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="material-icons">insights</span>
+          <h3>Overview</h3>
+        </div>
+        <div class="quick-stats">
+          <div class="quick-stat">
+            <div class="stat-icon" style="background: #e0e7ff; color: #6366f1;">
+              <span class="material-icons">electric_scooter</span>
+            </div>
+            <div class="stat-data">
+              <span class="stat-number">{{ stats.totalScooters }}</span>
+              <span class="stat-label">Scooters</span>
+            </div>
+          </div>
+          <div class="quick-stat">
+            <div class="stat-icon" style="background: #d1fae5; color: #10b981;">
+              <span class="material-icons">people</span>
+            </div>
+            <div class="stat-data">
+              <span class="stat-number">{{ stats.totalUsers }}</span>
+              <span class="stat-label">Users</span>
+            </div>
+          </div>
+          <div class="quick-stat">
+            <div class="stat-icon" style="background: #fef3c7; color: #f59e0b;">
+              <span class="material-icons">photo_camera</span>
+            </div>
+            <div class="stat-data">
+              <span class="stat-number">{{ stats.pendingPhotos }}</span>
+              <span class="stat-label">Pending Reviews</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Details -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="material-icons">person</span>
+          <h3>Account Details</h3>
+        </div>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-icon material-icons">badge</span>
+            <div>
+              <span class="detail-label">Full Name</span>
+              <span class="detail-value">{{ displayName }}</span>
+            </div>
+          </div>
+          <div class="detail-item">
+            <span class="detail-icon material-icons">email</span>
+            <div>
+              <span class="detail-label">Email Address</span>
+              <span class="detail-value">{{ displayEmail }}</span>
+            </div>
+          </div>
+          @if (displayPhone) {
+            <div class="detail-item">
+              <span class="detail-icon material-icons">phone</span>
+              <div>
+                <span class="detail-label">Phone Number</span>
+                <span class="detail-value">{{ displayPhone }}</span>
+              </div>
+            </div>
+          }
+          <div class="detail-item">
+            <span class="detail-icon material-icons">fingerprint</span>
+            <div>
+              <span class="detail-label">Account ID</span>
+              <span class="detail-value mono">{{ displayId }}</span>
+            </div>
+          </div>
+          <div class="detail-item">
+            <span class="detail-icon material-icons">calendar_today</span>
+            <div>
+              <span class="detail-label">Member Since</span>
+              <span class="detail-value">{{ getJoinDate() }}</span>
+            </div>
+          </div>
+          <div class="detail-item">
+            <span class="detail-icon material-icons">security</span>
+            <div>
+              <span class="detail-label">Role</span>
+              <span class="detail-value">Administrator</span>
+            </div>
+          </div>
+          <div class="detail-item">
+            <span class="detail-icon material-icons">verified_user</span>
+            <div>
+              <span class="detail-label">Account Status</span>
+              <span class="detail-value status-active">
+                <span class="dot green"></span>
+                {{ displayStatus }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="material-icons">lock</span>
+          <h3>Security</h3>
+        </div>
+
+        <div class="security-item" (click)="togglePasswordSection()">
+          <div class="security-left">
+            <div class="security-icon">
+              <span class="material-icons">key</span>
+            </div>
+            <div>
+              <span class="security-title">Change Password</span>
+              <span class="security-desc">Update your password regularly for better security</span>
+            </div>
+          </div>
+          <span class="material-icons expand-icon" [class.expanded]="showPasswordSection">
+            expand_more
+          </span>
+        </div>
+
+        @if (showPasswordSection) {
+          <div class="password-form">
+
+            @if (passwordError) {
+              <div class="error-alert">
+                <span class="material-icons">error</span>
+                {{ passwordError }}
+              </div>
+            }
+
+            <div class="form-group">
+              <label>Current Password</label>
+              <div class="input-wrapper">
+                <span class="material-icons">lock_outline</span>
+                <input
+                  [type]="showCurrentPassword ? 'text' : 'password'"
+                  [(ngModel)]="passwordForm.currentPassword"
+                  placeholder="Enter current password"
+                />
+                <button class="toggle-vis" (click)="showCurrentPassword = !showCurrentPassword">
+                  <span class="material-icons">
+                    {{ showCurrentPassword ? 'visibility_off' : 'visibility' }}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>New Password</label>
+              <div class="input-wrapper">
+                <span class="material-icons">lock</span>
+                <input
+                  [type]="showNewPassword ? 'text' : 'password'"
+                  [(ngModel)]="passwordForm.newPassword"
+                  placeholder="Minimum 6 characters"
+                />
+                <button class="toggle-vis" (click)="showNewPassword = !showNewPassword">
+                  <span class="material-icons">
+                    {{ showNewPassword ? 'visibility_off' : 'visibility' }}
+                  </span>
+                </button>
+              </div>
+              @if (passwordForm.newPassword) {
+                <div class="strength-bar">
+                  <div
+                    class="strength-fill"
+                    [style.width.%]="passwordStrength.width"
+                    [style.background]="passwordStrength.color"
+                  ></div>
+                </div>
+                <span class="strength-label" [style.color]="passwordStrength.color">
+                  {{ passwordStrength.label }}
+                </span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label>Confirm New Password</label>
+              <div class="input-wrapper" [class.match]="passwordsMatch" [class.no-match]="passwordForm.confirmPassword && !passwordsMatch">
+                <span class="material-icons">lock</span>
+                <input
+                  [type]="showConfirmPassword ? 'text' : 'password'"
+                  [(ngModel)]="passwordForm.confirmPassword"
+                  placeholder="Repeat new password"
+                  (keyup.enter)="changePassword()"
+                />
+                @if (passwordForm.confirmPassword) {
+                  <span class="material-icons match-icon">
+                    {{ passwordsMatch ? 'check_circle' : 'cancel' }}
+                  </span>
+                }
+              </div>
+            </div>
+
+            <button
+              class="change-password-btn"
+              (click)="changePassword()"
+              [disabled]="passwordLoading || !passwordForm.currentPassword || !passwordForm.newPassword || !passwordsMatch"
+            >
+              @if (passwordLoading) {
+                <div class="spinner-small"></div>
+                Changing Password...
+              } @else {
+                <span class="material-icons">lock_reset</span>
+                Change Password
+              }
+            </button>
+          </div>
+        }
+      </div>
+
+    </div>
+
+    <!-- Sidebar -->
+    <div class="profile-sidebar">
+
+      <!-- Recent Activity -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="material-icons">history</span>
+          <h3>Recent Activity</h3>
+        </div>
+        <div class="activity-list">
+          @for (activity of recentActivity; track activity.text) {
+            <div class="activity-item">
+              <div class="activity-icon" [style.background]="activity.color + '15'" [style.color]="activity.color">
+                <span class="material-icons">{{ activity.icon }}</span>
+              </div>
+              <div class="activity-info">
+                <span class="activity-text">{{ activity.text }}</span>
+                <span class="activity-time">{{ getTimeAgo(activity.time) }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="material-icons">flash_on</span>
+          <h3>Quick Actions</h3>
+        </div>
+        <div class="quick-actions">
+          <a [routerLink]="['/app/scooters']" class="quick-action-btn">
+            <span class="material-icons">electric_scooter</span>
+            <span>Manage Scooters</span>
+            <span class="material-icons action-arrow">chevron_right</span>
+          </a>
+          <a [routerLink]="['/app/users']" class="quick-action-btn">
+            <span class="material-icons">people</span>
+            <span>Manage Users</span>
+            <span class="material-icons action-arrow">chevron_right</span>
+          </a>
+          <a [routerLink]="['/app/parking-reviews']" class="quick-action-btn">
+            <span class="material-icons">photo_camera</span>
+            <span>Review Photos</span>
+            <span class="material-icons action-arrow">chevron_right</span>
+          </a>
+          <a [routerLink]="['/app/zones']" class="quick-action-btn">
+            <span class="material-icons">map</span>
+            <span>Manage Zones</span>
+            <span class="material-icons action-arrow">chevron_right</span>
+          </a>
+          <a [routerLink]="['/app/tariffs']" class="quick-action-btn">
+            <span class="material-icons">payments</span>
+            <span>Manage Tariffs</span>
+            <span class="material-icons action-arrow">chevron_right</span>
+          </a>
+          <a [routerLink]="['/app/create-admin']" class="quick-action-btn">
+            <span class="material-icons">person_add</span>
+            <span>Create Admin</span>
+            <span class="material-icons action-arrow">chevron_right</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>

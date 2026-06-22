@@ -1,0 +1,196 @@
+<div class="map-page">
+
+    <!-- Header -->
+    <div class="map-header">
+        <div>
+            <h1>
+                <span class="material-icons">map</span>
+                Live Map
+            </h1>
+            <p>Real-time view of all scooters and zones</p>
+        </div>
+        <div class="header-actions">
+            <button class="toggle-zones-btn" [class.active]="showZones" (click)="toggleZones()">
+                <span class="material-icons">{{ showZones ? 'visibility' : 'visibility_off' }}</span>
+                Zones
+            </button>
+            <button class="refresh-btn" (click)="refresh()" [disabled]="isLoading">
+                <span class="material-icons" [class.spinning]="isLoading">refresh</span>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="map-stats">
+        <div class="map-stat color-total" [class.active]="selectedStatus === 'All'" (click)="onStatusFilter('All')">
+            <div class="stat-icon-wrap">
+                <span class="material-icons">apps</span>
+            </div>
+            <div class="stat-content">
+                <span class="stat-num">{{ stats.total }}</span>
+                <span class="stat-text">Total</span>
+            </div>
+        </div>
+
+        <div class="map-stat color-available" [class.active]="selectedStatus === 'Available'"
+            (click)="onStatusFilter('Available')">
+            <div class="stat-icon-wrap">
+                <span class="material-icons">check_circle</span>
+            </div>
+            <div class="stat-content">
+                <span class="stat-num">{{ stats.available }}</span>
+                <span class="stat-text">Available</span>
+            </div>
+        </div>
+
+        <div class="map-stat color-inuse" [class.active]="selectedStatus === 'InUse'" (click)="onStatusFilter('InUse')">
+            <div class="stat-icon-wrap">
+                <span class="material-icons">directions_bike</span>
+            </div>
+            <div class="stat-content">
+                <span class="stat-num">{{ stats.inUse }}</span>
+                <span class="stat-text">In Use</span>
+            </div>
+        </div>
+
+        <div class="map-stat color-charging" [class.active]="selectedStatus === 'Charging'"
+            (click)="onStatusFilter('Charging')">
+            <div class="stat-icon-wrap">
+                <span class="material-icons">bolt</span>
+            </div>
+            <div class="stat-content">
+                <span class="stat-num">{{ stats.charging }}</span>
+                <span class="stat-text">Charging</span>
+            </div>
+        </div>
+
+        <div class="map-stat color-maintenance" [class.active]="selectedStatus === 'Maintenance'"
+            (click)="onStatusFilter('Maintenance')">
+            <div class="stat-icon-wrap">
+                <span class="material-icons">build</span>
+            </div>
+            <div class="stat-content">
+                <span class="stat-num">{{ stats.maintenance }}</span>
+                <span class="stat-text">Maintenance</span>
+            </div>
+        </div>
+
+        <div class="map-stat color-offline" [class.active]="selectedStatus === 'Offline'"
+            (click)="onStatusFilter('Offline')">
+            <div class="stat-icon-wrap">
+                <span class="material-icons">wifi_off</span>
+            </div>
+            <div class="stat-content">
+                <span class="stat-num">{{ stats.offline }}</span>
+                <span class="stat-text">Offline</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="map-layout">
+
+        <!-- Map -->
+        <div class="map-container-wrapper">
+            <div #mapContainer class="map-container"></div>
+
+            <!-- Loading Overlay -->
+            @if (isLoading) {
+            <div class="map-loading">
+                <div class="spinner"></div>
+                <p>Loading map data...</p>
+            </div>
+            }
+
+            <!-- Map Controls -->
+            <div class="map-controls">
+                <button class="map-ctrl-btn" (click)="resetView()" title="Reset View">
+                    <span class="material-icons">my_location</span>
+                </button>
+            </div>
+
+            <!-- Legend -->
+            <div class="map-legend">
+                <div class="legend-title">Legend</div>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="legend-marker" style="background: #10b981"></div>
+                        <span>Available</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-marker" style="background: #3b82f6"></div>
+                        <span>In Use</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-marker" style="background: #f59e0b"></div>
+                        <span>Charging</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-marker" style="background: #ef4444"></div>
+                        <span>Maintenance</span>
+                    </div>
+                    @if (showZones) {
+                    <div class="legend-divider"></div>
+                    <div class="legend-item">
+                        <div class="legend-zone"
+                            style="background: rgba(16, 185, 129, 0.3); border: 2px solid #10b981;"></div>
+                        <span>Parking Zone</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-zone" style="background: rgba(239, 68, 68, 0.3); border: 2px solid #ef4444;">
+                        </div>
+                        <span>No Parking</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-zone"
+                            style="background: rgba(245, 158, 11, 0.3); border: 2px solid #f59e0b;"></div>
+                        <span>Slow Zone</span>
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="map-sidebar">
+            <div class="sidebar-header">
+                <h3>
+                    <span class="material-icons">electric_scooter</span>
+                    Scooters
+                </h3>
+                <span class="sidebar-count">{{ filteredScooters.length }}</span>
+            </div>
+
+            <div class="scooter-list">
+                @if (filteredScooters.length === 0) {
+                <div class="empty-list">
+                    <span class="material-icons">search_off</span>
+                    <p>No scooters found</p>
+                </div>
+                }
+                @for (scooter of filteredScooters; track scooter.id) {
+                <div class="scooter-item" (click)="centerOnScooter(scooter)">
+                    <div class="scooter-icon" [style.background]="getStatusColor(scooter.status) + '20'"
+                        [style.color]="getStatusColor(scooter.status)">
+                        <span class="material-icons">electric_scooter</span>
+                    </div>
+                    <div class="scooter-info">
+                        <div class="scooter-name">{{ scooter.serialNumber }}</div>
+                        <div class="scooter-meta">
+                            <span class="status-dot" [style.background]="getStatusColor(scooter.status)"></span>
+                            {{ scooter.status }}
+                        </div>
+                    </div>
+                    <div class="scooter-battery">
+                        <span [style.color]="getBatteryBadgeColor(scooter.batteryLevel)">
+                            {{ scooter.batteryLevel }}%
+                        </span>
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+
+    </div>
+</div>

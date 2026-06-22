@@ -1,0 +1,206 @@
+<div class="page-container">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1>Dashboard</h1>
+      <p>Welcome back! Here's what's happening.</p>
+    </div>
+    <div class="header-meta">
+      <span class="live-badge">
+        <span class="live-dot"></span>
+        Live
+      </span>
+      <span class="updated-time">
+        Updated: {{ lastUpdated | date:'shortTime' }}
+      </span>
+      <button class="refresh-btn" (click)="loadData()">
+        <span class="material-icons">refresh</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading dashboard...</p>
+    </div>
+  }
+
+  @if (!isLoading && stats) {
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon blue">
+          <span class="material-icons">directions_bike</span>
+        </div>
+        <div class="kpi-data">
+          <h2>{{ stats.activeRides }}</h2>
+          <p>Active Rides</p>
+        </div>
+        <div class="kpi-trend up">
+          <span class="material-icons">trending_up</span>
+          +12%
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon green">
+          <span class="material-icons">electric_scooter</span>
+        </div>
+        <div class="kpi-data">
+          <h2>{{ stats.availableScooters }}</h2>
+          <p>Available Scooters</p>
+        </div>
+        <div class="kpi-trend up">
+          <span class="material-icons">trending_up</span>
+          +5%
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon purple">
+          <span class="material-icons">payments</span>
+        </div>
+        <div class="kpi-data">
+          <h2>{{ stats.todayRevenue | number:'1.0-0' }} EGP</h2>
+          <p>Today's Revenue</p>
+        </div>
+        <div class="kpi-trend up">
+          <span class="material-icons">trending_up</span>
+          +18%
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon orange">
+          <span class="material-icons">people</span>
+        </div>
+        <div class="kpi-data">
+          <h2>{{ stats.totalUsers }}</h2>
+          <p>Total Users</p>
+        </div>
+        <div class="kpi-trend up">
+          <span class="material-icons">trending_up</span>
+          +8%
+        </div>
+      </div>
+    </div>
+
+    <!-- Fleet Status Bar -->
+    <div class="fleet-bar">
+      <h3>Fleet Status</h3>
+      <div class="fleet-stats">
+        <div class="fleet-item">
+          <span class="dot green"></span>
+          <span>{{ stats.availableScooters }} Available</span>
+        </div>
+        <div class="fleet-item">
+          <span class="dot blue"></span>
+          <span>{{ stats.activeRides }} In Ride</span>
+        </div>
+        <div class="fleet-item">
+          <span class="dot orange"></span>
+          <span>{{ stats.chargingScooters }} Charging</span>
+        </div>
+        <div class="fleet-item">
+          <span class="dot red"></span>
+          <span>{{ stats.maintenanceScooters }} Maintenance</span>
+        </div>
+        <div class="fleet-item">
+          <span class="dot gray"></span>
+          <span>{{ stats.offlineScooters }} Offline</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two Column -->
+    <div class="two-col">
+
+      <!-- Scooter List -->
+      <div class="panel">
+        <div class="panel-header">
+          <h3>
+            <span class="material-icons">electric_scooter</span>
+            Fleet Overview
+          </h3>
+          <a routerLink="/app/scooters" class="view-all">View All</a>
+        </div>
+
+        <div class="scooter-list">
+          @for (scooter of scooters; track scooter.id) {
+            <div class="scooter-row">
+              <div class="scooter-main">
+                <div class="scooter-id">{{ scooter.serialNumber }}</div>
+                <div class="scooter-location">
+                  <span class="material-icons">location_on</span>
+                  {{ scooter.location || 'Cairo, Egypt' }}
+                </div>
+              </div>
+
+              <div class="scooter-battery">
+                <span
+                  class="material-icons"
+                  [style.color]="getBatteryColor(scooter.batteryLevel)"
+                >
+                  {{ getBatteryIcon(scooter.batteryLevel) }}
+                </span>
+                <span [style.color]="getBatteryColor(scooter.batteryLevel)">
+                  {{ scooter.batteryLevel }}%
+                </span>
+              </div>
+
+              <span
+                class="status-pill"
+                [style.color]="getStatusColor(scooter.status)"
+                [style.background]="getStatusBg(scooter.status)"
+              >
+                {{ scooter.status }}
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Recent Rides -->
+      <div class="panel">
+        <div class="panel-header">
+          <h3>
+            <span class="material-icons">route</span>
+            Recent Rides
+          </h3>
+          <a routerLink="/app/rides" class="view-all">View All</a>
+        </div>
+
+        <div class="rides-list">
+          @for (ride of rides; track ride.id) {
+            <div class="ride-row">
+              <div class="ride-avatar">
+                {{ ride.userName.charAt(0) }}
+              </div>
+              <div class="ride-info">
+                <div class="ride-user">{{ ride.userName }}</div>
+                <div class="ride-meta">
+                  {{ ride.scooterId }} •
+                  {{ ride.startTime | date:'shortTime' }}
+                </div>
+              </div>
+              <div class="ride-right">
+                @if (ride.status === 'Active') {
+                  <span class="active-badge">Active</span>
+                } @else {
+                  <span class="ride-cost">{{ ride.cost }} EGP</span>
+                  <span class="ride-duration">{{ ride.duration }} min</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+    </div>
+  }
+
+</div>

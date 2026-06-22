@@ -1,0 +1,145 @@
+<div class="login-container">
+
+  <!-- Left Side - Branding -->
+  <div class="login-image">
+
+    <!-- Decorative shapes -->
+    <div class="bg-shape shape-1"></div>
+    <div class="bg-shape shape-2"></div>
+    <div class="bg-shape shape-3"></div>
+
+    <div class="overlay">
+      <div class="brand">
+        <div class="brand-icon">
+          <span class="material-icons">electric_scooter</span>
+        </div>
+        <h1>ScooterAdmin</h1>
+        <p>Manage your fleet with ease</p>
+
+        <div class="features">
+          <div class="feature-item">
+            <span class="material-icons">map</span>
+            <span>Live tracking & monitoring</span>
+          </div>
+          <div class="feature-item">
+            <span class="material-icons">insights</span>
+            <span>Real-time analytics</span>
+          </div>
+          <div class="feature-item">
+            <span class="material-icons">security</span>
+            <span>Secure & reliable</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side - Form -->
+  <div class="login-form-container">
+    <div class="login-card">
+
+      <!-- Mobile Logo -->
+      <div class="mobile-logo">
+        <div class="logo-icon">
+          <span class="material-icons">electric_scooter</span>
+        </div>
+        <h3>ScooterAdmin</h3>
+      </div>
+
+      <!-- Header -->
+      <div class="login-header">
+        <h2>Welcome Back</h2>
+        <p>Sign in to your account to continue</p>
+      </div>
+
+      <!-- Error Alert -->
+      @if (errorMessage) {
+        <div class="error-alert">
+          <span class="material-icons">error</span>
+          <span>{{ errorMessage }}</span>
+        </div>
+      }
+
+      <!-- Form -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+
+        <!-- Email or Phone -->
+        <div class="form-group">
+          <label for="identifier">Email or Phone</label>
+          <div class="input-wrapper" [class.invalid]="identifierControl?.invalid && identifierControl?.touched">
+            <span class="material-icons">person</span>
+            <input
+              id="identifier"
+              type="text"
+              formControlName="identifier"
+              placeholder="admin@scooter.com"
+              autocomplete="username"
+            />
+          </div>
+          @if (identifierControl?.invalid && identifierControl?.touched) {
+            <span class="error-text">
+              @if (identifierControl?.errors?.['required']) {
+                Email is required
+              }
+            </span>
+          }
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrapper" [class.invalid]="passwordControl?.invalid && passwordControl?.touched">
+            <span class="material-icons">lock</span>
+            <input
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+            />
+            <button
+              type="button"
+              class="toggle-password"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+            >
+              <span class="material-icons">
+                {{ showPassword ? 'visibility_off' : 'visibility' }}
+              </span>
+            </button>
+          </div>
+          @if (passwordControl?.invalid && passwordControl?.touched) {
+            <span class="error-text">
+              @if (passwordControl?.errors?.['required']) {
+                Password is required
+              } @else if (passwordControl?.errors?.['minlength']) {
+                Password must be at least 6 characters
+              }
+            </span>
+          }
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          class="login-btn"
+          [disabled]="isLoading || loginForm.invalid"
+        >
+          @if (isLoading) {
+            <span class="spinner"></span>
+            <span>Signing in...</span>
+          } @else {
+            <span>Sign In</span>
+            <span class="material-icons">arrow_forward</span>
+          }
+        </button>
+      </form>
+
+      <!-- Footer -->
+      <div class="login-footer">
+        <p>&copy; 2024 Scooter Sharing System</p>
+      </div>
+    </div>
+  </div>
+
+</div>

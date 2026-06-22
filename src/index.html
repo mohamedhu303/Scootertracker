@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>DashboardApp</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    @keyframes scooterPulseAnim {
+      0% {
+        transform: translateX(-50%) scale(0.7);
+        opacity: 0.7;
+      }
+
+      100% {
+        transform: translateX(-50%) scale(1.8);
+        opacity: 0;
+      }
+    }
+
+    .scooter-marker-hover:hover {
+      transform: translateY(-6px) scale(1.1);
+      z-index: 1000 !important;
+    }
+
+    .scooter-marker-custom {
+      background: transparent !important;
+      border: none !important;
+    }
+
+    .leaflet-popup-content-wrapper {
+      border-radius: 18px !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2) !important;
+      border: 1px solid #e2e8f0 !important;
+    }
+
+    .leaflet-popup-content {
+      margin: 0 !important;
+      width: 280px !important;
+    }
+
+    .leaflet-popup-tip {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .leaflet-popup-close-button {
+      color: white !important;
+      font-size: 20px !important;
+      padding: 8px 12px !important;
+      z-index: 10 !important;
+    }
+  </style>
+</head>
+
+<body>
+  <app-root></app-root>
+</body>
+
+</html>

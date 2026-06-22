@@ -1,0 +1,240 @@
+<div class="page-container">
+
+  <button class="back-btn" (click)="goBack()">
+    <span class="material-icons">arrow_back</span>
+    Back to Users
+  </button>
+
+  @if (isLoading) {
+    <app-skeleton type="detail" />
+  }
+
+  @if (!isLoading && user) {
+
+    <!-- User Header -->
+    <div class="user-header">
+      <div class="header-left">
+        <div class="user-avatar-lg">
+          {{ user.fullName.charAt(0) }}
+        </div>
+        <div>
+          <h1>{{ user.fullName }}</h1>
+          <p class="user-email">{{ user.email }}</p>
+          <p class="user-phone">{{ user.phoneNumber }}</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <span
+          class="account-status-badge"
+          [class.active]="user.accountStatus === 'Active'"
+          [class.suspended]="user.accountStatus === 'Suspended'"
+        >
+          {{ user.accountStatus }}
+        </span>
+        <button
+          class="action-toggle-btn"
+          [class.suspend-btn]="user.accountStatus === 'Active'"
+          [class.activate-btn]="user.accountStatus === 'Suspended'"
+          (click)="toggleUserStatus()"
+          [disabled]="actionLoading"
+        >
+          <span class="material-icons">
+            {{ user.accountStatus === 'Active' ? 'block' : 'check_circle' }}
+          </span>
+          {{ user.accountStatus === 'Active' ? 'Suspend' : 'Activate' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button
+        class="tab"
+        [class.active]="activeTab === 'info'"
+        (click)="switchTab('info')"
+      >
+        <span class="material-icons">person</span>
+        User Info
+      </button>
+      <button
+        class="tab"
+        [class.active]="activeTab === 'wallet'"
+        (click)="switchTab('wallet')"
+      >
+        <span class="material-icons">account_balance_wallet</span>
+        Wallet
+      </button>
+    </div>
+
+    <!-- Info Tab -->
+    @if (activeTab === 'info') {
+      <div class="info-grid">
+        <div class="info-card">
+          <span class="material-icons" style="color: #6366f1">fingerprint</span>
+          <div>
+            <label>User ID</label>
+            <span class="mono">{{ user.id }}</span>
+          </div>
+        </div>
+        <div class="info-card">
+          <span class="material-icons" style="color: #10b981">verified</span>
+          <div>
+            <label>ID Verification</label>
+            <span
+              class="verification-badge"
+              [style.color]="getVerificationColor(user.idVerificationStatus)"
+              [style.background]="getVerificationBg(user.idVerificationStatus)"
+            >
+              {{ user.idVerificationStatus }}
+            </span>
+          </div>
+        </div>
+        <div class="info-card">
+          <span class="material-icons" style="color: #f59e0b">phone_android</span>
+          <div>
+            <label>Phone Verified</label>
+            <span [class.verified]="user.phoneVerified" [class.not-verified]="!user.phoneVerified">
+              {{ user.phoneVerified ? 'Verified' : 'Not Verified' }}
+            </span>
+          </div>
+        </div>
+        <div class="info-card">
+          <span class="material-icons" style="color: #8b5cf6">account_balance_wallet</span>
+          <div>
+            <label>Wallet Balance</label>
+            <span class="balance">{{ user.walletBalance | number:'1.2-2' }} EGP</span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Wallet Tab -->
+    @if (activeTab === 'wallet') {
+      <div class="wallet-section">
+        <div class="wallet-header">
+          <div class="wallet-balance-card">
+            <span class="material-icons">account_balance_wallet</span>
+            <div>
+              <label>Current Balance</label>
+              <span class="big-balance">{{ user.walletBalance | number:'1.2-2' }} EGP</span>
+            </div>
+          </div>
+          <button class="adjust-btn" (click)="openAdjustDialog()">
+            <span class="material-icons">tune</span>
+            Adjust Balance
+          </button>
+        </div>
+
+        <h3 class="section-title">Recent Transactions</h3>
+
+        @if (transactions.length === 0) {
+          <div class="empty-transactions">
+            <span class="material-icons">receipt_long</span>
+            <p>No transactions found</p>
+          </div>
+        }
+
+        @if (transactions.length > 0) {
+          <div class="transactions-list">
+            @for (tx of transactions; track tx.id) {
+              <div class="transaction-row">
+                <div class="tx-icon" [style.color]="getTransactionColor(tx.type)">
+                  <span class="material-icons">
+                    {{ tx.amount >= 0 ? 'add_circle' : 'remove_circle' }}
+                  </span>
+                </div>
+                <div class="tx-info">
+                  <span class="tx-desc">{{ tx.description || tx.type }}</span>
+                  <span class="tx-date">{{ tx.timestamp | date:'medium' }}</span>
+                </div>
+                <span
+                  class="tx-amount"
+                  [class.positive]="tx.amount >= 0"
+                  [class.negative]="tx.amount < 0"
+                >
+                  {{ tx.amount >= 0 ? '+' : '' }}{{ tx.amount | number:'1.2-2' }} EGP
+                </span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+
+  @if (!isLoading && !user) {
+    <div class="not-found">
+      <span class="material-icons">person_search</span>
+      <h3>User not found</h3>
+      <button class="back-link" (click)="goBack()">Back to Users</button>
+    </div>
+  }
+</div>
+
+<!-- Wallet Adjustment Dialog -->
+@if (showAdjustDialog) {
+  <div class="dialog-backdrop" (click)="closeAdjustDialog()">
+    <div class="dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h3>
+          <span class="material-icons">tune</span>
+          Adjust Wallet Balance
+        </h3>
+        <button class="close-btn" (click)="closeAdjustDialog()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      <div class="dialog-body">
+        <p class="adjust-user">
+          Adjusting wallet for <strong>{{ user?.fullName }}</strong>
+        </p>
+        <p class="adjust-current">
+          Current balance: <strong>{{ user?.walletBalance | number:'1.2-2' }} EGP</strong>
+        </p>
+
+        <div class="form-group">
+          <label>Amount (EGP)</label>
+          <input type="number" [(ngModel)]="adjustAmount" placeholder="Enter amount (positive or negative)" step="5" />
+          <span class="field-hint">Use positive to add, negative to deduct</span>
+        </div>
+
+        <div class="quick-amounts">
+          <button (click)="adjustAmount = -50" [class.active]="adjustAmount === -50">-50</button>
+          <button (click)="adjustAmount = -25" [class.active]="adjustAmount === -25">-25</button>
+          <button (click)="adjustAmount = -10" [class.active]="adjustAmount === -10">-10</button>
+          <button (click)="adjustAmount = 10" [class.active]="adjustAmount === 10">+10</button>
+          <button (click)="adjustAmount = 25" [class.active]="adjustAmount === 25">+25</button>
+          <button (click)="adjustAmount = 50" [class.active]="adjustAmount === 50">+50</button>
+          <button (click)="adjustAmount = 100" [class.active]="adjustAmount === 100">+100</button>
+        </div>
+
+        @if (adjustAmount !== 0) {
+          <div class="preview-balance" [class.positive]="adjustAmount > 0" [class.negative]="adjustAmount < 0">
+            New balance: <strong>{{ (user?.walletBalance || 0) + adjustAmount | number:'1.2-2' }} EGP</strong>
+          </div>
+        }
+
+        <div class="form-group">
+          <label>Reason <span class="required">*</span></label>
+          <textarea [(ngModel)]="adjustReason" placeholder="e.g., Refund for cancelled ride, Promotional credit..." rows="3"></textarea>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button class="cancel-btn" (click)="closeAdjustDialog()">Cancel</button>
+        <button
+          class="save-btn"
+          (click)="submitAdjustment()"
+          [disabled]="adjustLoading || !adjustReason.trim() || adjustAmount === 0"
+        >
+          @if (adjustLoading) {
+            <div class="spinner-small"></div>
+            Processing...
+          } @else {
+            <span class="material-icons">check</span>
+            Apply Adjustment
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

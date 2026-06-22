@@ -1,0 +1,94 @@
+<div class="layout" [class.sidebar-collapsed]="!isSidebarOpen()" [class.mobile]="isMobile()">
+
+  <!-- 📱 Mobile Overlay -->
+  @if (isMobile() && isSidebarOpen()) {
+    <div class="sidebar-overlay" (click)="closeSidebarOnMobile()"></div>
+  }
+
+  <!-- 🎛️ Sidebar -->
+  <aside class="sidebar" [class.open]="isSidebarOpen()">
+    <div class="sidebar-logo">
+      <span class="material-icons logo-icon">electric_scooter</span>
+      <span class="logo-text">ScooterAdmin</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      @for (item of menuItems; track item.route) {
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          class="nav-item"
+          [title]="item.label"
+          (click)="closeSidebarOnMobile()"
+        >
+          <span class="material-icons">{{ item.icon }}</span>
+          <span class="nav-label">{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" (click)="logout()">
+        <span class="material-icons">logout</span>
+        <span class="nav-label">Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- 📄 Main Content -->
+  <div class="main">
+    <header class="header">
+      <button class="toggle-btn" (click)="toggleSidebar()">
+        <span class="material-icons">{{ isSidebarOpen() ? 'menu_open' : 'menu' }}</span>
+      </button>
+
+      <div class="header-right">
+
+        <!-- 🌓 Theme Toggle -->
+        <button
+          class="theme-toggle-btn"
+          (click)="toggleTheme()"
+          [title]="isDark ? 'Switch to Light' : 'Switch to Dark'"
+        >
+          <span class="material-icons">{{ isDark ? 'light_mode' : 'dark_mode' }}</span>
+        </button>
+
+        <!-- 🔔 Notification Bell + Panel -->
+        <div class="notification-wrapper">
+          <button
+            class="notification-btn"
+            (click)="toggleNotifications()"
+            [title]="'Notifications'"
+          >
+            <span class="material-icons">notifications</span>
+            @if (unreadCount > 0) {
+              <span class="badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+            }
+          </button>
+
+          <!-- Notification Panel -->
+          <app-notification-panel
+            [isOpen]="isNotificationOpen()"
+            (close)="closeNotifications()"
+          />
+        </div>
+
+        <!-- 👤 Admin Badge -->
+        <a routerLink="/app/profile" class="admin-badge-link">
+          <div class="admin-avatar-header">
+            {{ admin?.fullName?.charAt(0) || 'A' }}
+          </div>
+          <div class="admin-info-header">
+            <span class="admin-name">{{ admin?.fullName || 'Admin' }}</span>
+            <span class="admin-role">{{ admin?.role || 'Administrator' }}</span>
+          </div>
+          <span class="material-icons badge-arrow">chevron_right</span>
+        </a>
+      </div>
+    </header>
+
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

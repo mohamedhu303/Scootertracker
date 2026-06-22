@@ -1,0 +1,163 @@
+<div class="page-container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Rides Management</h1>
+      <p>Track all active and historical rides</p>
+    </div>
+    <app-export-menu [config]="exportConfig"></app-export-menu>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card total">
+      <span class="material-icons">route</span>
+      <div>
+        <h3>{{ stats.total }}</h3>
+        <p>Total Rides</p>
+      </div>
+    </div>
+    <div class="stat-card active">
+      <span class="material-icons">directions_bike</span>
+      <div>
+        <h3>{{ stats.active }}</h3>
+        <p>Active Now</p>
+      </div>
+    </div>
+    <div class="stat-card completed">
+      <span class="material-icons">check_circle</span>
+      <div>
+        <h3>{{ stats.completed }}</h3>
+        <p>Completed</p>
+      </div>
+    </div>
+    <div class="stat-card revenue">
+      <span class="material-icons">payments</span>
+      <div>
+        <h3>{{ stats.totalRevenue | number:'1.0-0' }} EGP</h3>
+        <p>Total Revenue</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <div class="search-box">
+      <span class="material-icons">search</span>
+      <input
+        type="text"
+        placeholder="Search by user, scooter, ride ID, phone..."
+        [(ngModel)]="searchTerm"
+        (input)="onSearch()"
+      />
+    </div>
+    <div class="status-filters">
+      @for (status of statuses; track status) {
+        <button
+          class="filter-btn"
+          [class.active]="selectedStatus === status"
+          (click)="onStatusFilter(status)"
+        >
+          {{ status }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading rides...</p>
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!isLoading) {
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Ride ID</th>
+            <th>User</th>
+            <th>Scooter</th>
+            <th>Status</th>
+            <th>Start Time</th>
+            <th>Duration</th>
+            <th>Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (filteredRides.length === 0) {
+            <tr>
+              <td colspan="7" class="empty-row">
+                <span class="material-icons">search_off</span>
+                <p>No rides found</p>
+              </td>
+            </tr>
+          }
+          @for (ride of filteredRides; track ride.id) {
+            <tr [class.active-ride]="ride.status === 'Active'">
+              <td>
+                <span class="ride-id">{{ ride.id }}</span>
+              </td>
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar">
+                    {{ (ride.userName || ride.userPhoneNumber).charAt(0) }}
+                  </div>
+                  <div>
+                    <span class="user-name">{{ ride.userName || 'Unknown' }}</span>
+                    <span class="user-phone">{{ ride.userPhoneNumber }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="scooter-id">{{ ride.scooterSerialNumber }}</span>
+              </td>
+              <td>
+                <span
+                  class="status-badge"
+                  [style.color]="getStatusColor(ride.status)"
+                  [style.background]="getStatusBg(ride.status)"
+                >
+                  @if (ride.status === 'Active') {
+                    <span class="pulse-dot"></span>
+                  }
+                  {{ ride.status }}
+                </span>
+              </td>
+              <td class="time-cell">
+                {{ ride.startTime | date:'MMM d, h:mm a' }}
+              </td>
+              <td>
+                @if (ride.durationInMinutes) {
+                  <span class="duration">{{ ride.durationInMinutes }} min</span>
+                } @else {
+                  <span class="ongoing">Ongoing...</span>
+                }
+              </td>
+              <td>
+                @if (ride.totalCost) {
+                  <span class="cost">{{ ride.totalCost | number:'1.2-2' }} EGP</span>
+                } @else {
+                  <span class="cost-pending">Pending</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <app-pagination
+      [currentPage]="currentPage"
+      [pageSize]="pageSize"
+      [totalItems]="totalItems"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    ></app-pagination>
+  }
+
+</div>

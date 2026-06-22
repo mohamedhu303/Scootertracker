@@ -1,0 +1,245 @@
+<div class="page-container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Parking Photo Reviews</h1>
+      <p>Review end-of-ride parking photos from riders</p>
+    </div>
+    <div class="header-stats">
+      <div class="header-stat pending">
+        <span class="material-icons">pending_actions</span>
+        <div>
+          <span>{{ totalCount }}</span>
+          <p>Pending Reviews</p>
+        </div>
+      </div>
+      <button class="refresh-btn" (click)="loadData()">
+        <span class="material-icons">refresh</span>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading pending photos...</p>
+    </div>
+  }
+
+  <!-- Empty -->
+  @if (!isLoading && photos.length === 0) {
+    <div class="empty-state">
+      <span class="material-icons">check_circle</span>
+      <h3>All caught up!</h3>
+      <p>No pending parking photos to review.</p>
+    </div>
+  }
+
+  <!-- Photo Cards -->
+  @if (!isLoading && photos.length > 0) {
+    <div class="photos-grid">
+      @for (photo of photos; track photo.rideId) {
+        <div class="review-card" [class.loading]="actionLoading === photo.rideId">
+
+          <!-- Photo -->
+          <div class="card-image" (click)="openImagePreview(photo.endPhotoUrl)">
+            <!-- ✅ ضفت imageUrl pipe + error handler -->
+            <img
+              [src]="photo.endPhotoUrl | imageUrl"
+              alt="Parking photo"
+              loading="lazy"
+              (error)="onImageError($event)"
+            />
+            <div class="image-overlay">
+              <span class="material-icons">zoom_in</span>
+            </div>
+          </div>
+
+          <!-- Info -->
+          <div class="card-info">
+            <div class="info-row">
+              <span class="material-icons">electric_scooter</span>
+              <span class="info-label">Scooter:</span>
+              <span class="info-value">{{ photo.scooterSerialNumber }}</span>
+            </div>
+            <div class="info-row">
+              <span class="material-icons">phone</span>
+              <span class="info-label">User:</span>
+              <span class="info-value">{{ photo.userPhoneNumber }}</span>
+            </div>
+            <div class="info-row">
+              <span class="material-icons">schedule</span>
+              <span class="info-label">Ended:</span>
+              <span class="info-value">{{ getTimeAgo(photo.endTime) }}</span>
+            </div>
+            <div class="info-row">
+              <span class="material-icons">confirmation_number</span>
+              <span class="info-label">Ride ID:</span>
+              <span class="info-value ride-id">{{ photo.rideId }}</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="card-actions">
+            @if (actionLoading === photo.rideId) {
+              <div class="action-loading">
+                <div class="spinner-small"></div>
+                <span>Processing...</span>
+              </div>
+            } @else {
+              <button
+                class="approve-btn"
+                (click)="approvePhoto(photo)"
+                title="Approve parking"
+              >
+                <span class="material-icons">check_circle</span>
+                Approve
+              </button>
+              <button
+                class="reject-btn"
+                (click)="openRejectDialog(photo)"
+                title="Reject parking"
+              >
+                <span class="material-icons">cancel</span>
+                Reject
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+<!-- ===== Reject Dialog ===== -->
+@if (showRejectDialog) {
+  <div class="dialog-backdrop" (click)="closeRejectDialog()">
+    <div class="dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h3>
+          <span class="material-icons">report</span>
+          Reject Parking Photo
+        </h3>
+        <button class="close-btn" (click)="closeRejectDialog()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <div class="dialog-body">
+
+        <!-- Photo preview in dialog -->
+        @if (selectedPhoto) {
+          <div class="dialog-photo">
+            <!-- ✅ ضفت imageUrl pipe + error handler -->
+            <img
+              [src]="selectedPhoto.endPhotoUrl | imageUrl"
+              alt="Parking photo"
+              (error)="onImageError($event)"
+            />
+            <div class="dialog-photo-info">
+              <span>Scooter: {{ selectedPhoto.scooterSerialNumber }}</span>
+              <span>User: {{ selectedPhoto.userPhoneNumber }}</span>
+            </div>
+          </div>
+        }
+
+        <!-- Reason -->
+        <div class="form-group">
+          <label for="reason">
+            Rejection Reason
+            <span class="required">*</span>
+          </label>
+          <textarea
+            id="reason"
+            [(ngModel)]="rejectionReason"
+            placeholder="e.g., Scooter not parked properly, blocking sidewalk..."
+            rows="3"
+          ></textarea>
+          @if (rejectionReason.trim().length === 0) {
+            <span class="field-hint">Please provide a reason for rejection</span>
+          }
+        </div>
+
+        <!-- Penalty -->
+        <div class="form-group">
+          <label for="penalty">Penalty Amount (EGP)</label>
+          <div class="penalty-input">
+            <span class="material-icons">payments</span>
+            <input
+              id="penalty"
+              type="number"
+              [(ngModel)]="penaltyAmount"
+              placeholder="0"
+              min="0"
+              step="5"
+            />
+            <span class="currency">EGP</span>
+          </div>
+          <span class="field-hint">Leave 0 for no penalty</span>
+        </div>
+
+        <!-- Quick penalty buttons -->
+        <div class="quick-penalties">
+          <label>Quick select:</label>
+          <div class="penalty-btns">
+            <button (click)="penaltyAmount = 0" [class.active]="penaltyAmount === 0">
+              No Penalty
+            </button>
+            <button (click)="penaltyAmount = 10" [class.active]="penaltyAmount === 10">
+              10 EGP
+            </button>
+            <button (click)="penaltyAmount = 25" [class.active]="penaltyAmount === 25">
+              25 EGP
+            </button>
+            <button (click)="penaltyAmount = 50" [class.active]="penaltyAmount === 50">
+              50 EGP
+            </button>
+            <button (click)="penaltyAmount = 100" [class.active]="penaltyAmount === 100">
+              100 EGP
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dialog-footer">
+        <button class="cancel-btn" (click)="closeRejectDialog()">
+          Cancel
+        </button>
+        <button
+          class="confirm-reject-btn"
+          (click)="confirmReject()"
+          [disabled]="rejectionReason.trim().length === 0 || actionLoading !== null"
+        >
+          @if (actionLoading) {
+            <div class="spinner-small"></div>
+            Rejecting...
+          } @else {
+            <span class="material-icons">cancel</span>
+            Reject & Apply Penalty
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== Image Preview ===== -->
+@if (showImagePreview) {
+  <div class="image-preview-backdrop" (click)="closeImagePreview()">
+    <div class="image-preview-container">
+      <button class="preview-close" (click)="closeImagePreview()">
+        <span class="material-icons">close</span>
+      </button>
+      <!-- ✅ ضفت imageUrl pipe + error handler -->
+      <img
+        [src]="previewImageUrl | imageUrl"
+        alt="Full size parking photo"
+        (error)="onImageError($event)"
+      />
+    </div>
+  </div>
+}

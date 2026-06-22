@@ -1,0 +1,254 @@
+<div class="page-container">
+
+  <div class="page-header">
+    <div>
+      <h1>Scooters Management</h1>
+      <p>Monitor and manage your entire fleet</p>
+    </div>
+    <div class="header-actions-row">
+      <app-export-menu [config]="exportConfig"></app-export-menu>
+      <button class="add-btn" (click)="openAddDialog()">
+        <span class="material-icons">add</span>
+        Add Scooter
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  @if (!isLoading) {
+  <div class="stats-row">
+    <div class="stat-card total">
+      <span class="material-icons">electric_scooter</span>
+      <div>
+        <h3>{{ stats.total }}</h3>
+        <p>Total Fleet</p>
+      </div>
+    </div>
+    <div class="stat-card available">
+      <span class="material-icons">check_circle</span>
+      <div>
+        <h3>{{ stats.available }}</h3>
+        <p>Available</p>
+      </div>
+    </div>
+    <div class="stat-card inride">
+      <span class="material-icons">directions_bike</span>
+      <div>
+        <h3>{{ stats.inRide }}</h3>
+        <p>In Ride</p>
+      </div>
+    </div>
+    <div class="stat-card charging">
+      <span class="material-icons">bolt</span>
+      <div>
+        <h3>{{ stats.charging }}</h3>
+        <p>Charging</p>
+      </div>
+    </div>
+    <div class="stat-card maintenance">
+      <span class="material-icons">build</span>
+      <div>
+        <h3>{{ stats.maintenance }}</h3>
+        <p>Maintenance</p>
+      </div>
+    </div>
+  </div>
+  } @else {
+  <app-skeleton type="stats" [statCount]="5" />
+  }
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <div class="search-box">
+      <span class="material-icons">search</span>
+      <input type="text" placeholder="Search by serial number, model..." [(ngModel)]="searchTerm"
+        (input)="onSearch()" />
+    </div>
+    <div class="status-filters">
+      @for (status of statuses; track status) {
+      <button class="filter-btn" [class.active]="selectedStatus === status" (click)="onStatusFilter(status)">
+        {{ status }}
+      </button>
+      }
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading) {
+  <app-skeleton type="table" [rowCount]="6" [colCount]="5" />
+  }
+
+  <!-- Table -->
+  @if (!isLoading) {
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Serial Number</th>
+          <th>Model</th>
+          <th>Status</th>
+          <th>Battery</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (scooters.length === 0) {
+        <tr>
+          <td colspan="5" class="empty-row">
+            <span class="material-icons">search_off</span>
+            <p>No scooters found</p>
+          </td>
+        </tr>
+        }
+        @for (scooter of scooters; track scooter.id) {
+        <tr>
+          <td>
+            <span class="scooter-id">{{ scooter.serialNumber }}</span>
+          </td>
+          <td>{{ scooter.modelName }}</td>
+          <td>
+            <span class="status-badge" [style.color]="getStatusColor(scooter.status)"
+              [style.background]="getStatusBg(scooter.status)">
+              {{ scooter.status }}
+            </span>
+          </td>
+          <td>
+            <div class="battery-cell">
+              <div class="battery-bar">
+                <div class="battery-fill" [style.width.%]="scooter.batteryLevel"
+                  [style.background]="getBatteryColor(scooter.batteryLevel)"></div>
+              </div>
+              <span [style.color]="getBatteryTextColor(scooter.batteryLevel)">
+                {{ scooter.batteryLevel }}%
+              </span>
+            </div>
+          </td>
+          <td>
+            <div class="actions">
+              <button class="action-btn view" title="View Details" (click)="viewScooter(scooter)">
+                <span class="material-icons">visibility</span>
+              </button>
+              <button class="action-btn lock" title="Lock" (click)="lockScooter(scooter)">
+                <span class="material-icons">lock</span>
+              </button>
+              <button class="action-btn delete" title="Delete" (click)="deleteScooter(scooter)">
+                <span class="material-icons">delete</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <app-pagination [currentPage]="currentPage" [pageSize]="pageSize" [totalItems]="totalItems"
+    (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)"></app-pagination>
+  }
+
+</div>
+
+<!-- ===== Add Scooter Dialog ===== -->
+@if (showAddDialog) {
+<div class="dialog-backdrop" (click)="closeAddDialog()">
+  <div class="dialog" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="dialog-header">
+      <h3>
+        <span class="material-icons">add_circle</span>
+        Add New Scooter
+      </h3>
+      <button class="close-btn" (click)="closeAddDialog()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="dialog-body">
+
+      @if (addError) {
+      <div class="error-alert">
+        <span class="material-icons">error</span>
+        {{ addError }}
+      </div>
+      }
+
+      <div class="add-scooter-icon">
+        <span class="material-icons">electric_scooter</span>
+      </div>
+
+      <div class="form-group">
+        <label for="serial">
+          Serial Number
+          <span class="required">*</span>
+        </label>
+        <div class="input-wrapper">
+          <span class="material-icons">qr_code</span>
+          <input id="serial" type="text" [(ngModel)]="newScooter.serialNumber" placeholder="e.g., SC-2001"
+            (keyup.enter)="addScooter()" />
+        </div>
+        <span class="field-hint">Unique identifier for the scooter</span>
+      </div>
+
+      <div class="form-group">
+        <label for="model">Model</label>
+        <div class="input-wrapper">
+          <span class="material-icons">category</span>
+          <select id="model" [(ngModel)]="newScooter.modelId">
+            <option value="">Select a model</option>
+            @for (model of scooterModels; track model.id) {
+            <option [value]="model.id">{{ model.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      @if (newScooter.serialNumber.trim()) {
+      <div class="preview-card">
+        <div class="preview-header">
+          <span class="material-icons">preview</span>
+          Preview
+        </div>
+        <div class="preview-body">
+          <div class="preview-row">
+            <span class="preview-label">Serial:</span>
+            <span class="preview-value">{{ newScooter.serialNumber }}</span>
+          </div>
+          <div class="preview-row">
+            <span class="preview-label">Model:</span>
+            <span class="preview-value">{{ getModelName(newScooter.modelId) }}</span>
+          </div>
+          <div class="preview-row">
+            <span class="preview-label">Status:</span>
+            <span class="preview-status">Available</span>
+          </div>
+          <div class="preview-row">
+            <span class="preview-label">Battery:</span>
+            <span class="preview-battery">100%</span>
+          </div>
+        </div>
+      </div>
+      }
+
+    </div>
+
+    <!-- Footer -->
+    <div class="dialog-footer">
+      <button class="cancel-btn" (click)="closeAddDialog()">
+        Cancel
+      </button>
+      <button class="save-btn" (click)="addScooter()" [disabled]="addLoading || !newScooter.serialNumber.trim()">
+        @if (addLoading) {
+        <div class="spinner-small"></div>
+        Adding...
+        } @else {
+        <span class="material-icons">add</span>
+        Add Scooter
+        }
+      </button>
+    </div>
+
+  </div>
+</div>
+}

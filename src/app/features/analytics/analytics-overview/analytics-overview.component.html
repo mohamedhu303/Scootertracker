@@ -1,0 +1,240 @@
+<div class="page-container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Analytics Dashboard</h1>
+      <p>Insights and statistics for your scooter business</p>
+    </div>
+    <button class="refresh-btn" (click)="refresh()" [disabled]="isLoading">
+      <span class="material-icons">refresh</span>
+      Refresh
+    </button>
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading) {
+    <app-skeleton type="stats" [statCount]="4" />
+    <div style="height: 24px;"></div>
+    <app-skeleton type="cards" [cardCount]="2" />
+  }
+
+  @if (!isLoading && overview) {
+
+    <!-- Overview Stats -->
+    <div class="stats-grid">
+      <div class="stat-card revenue">
+        <div class="stat-header">
+          <div class="stat-icon"><span class="material-icons">payments</span></div>
+          <span class="growth-badge up">
+            <span class="material-icons">trending_up</span>
+            +{{ overview.revenueGrowth }}%
+          </span>
+        </div>
+        <div class="stat-value">{{ overview.totalRevenue | number:'1.0-0' }} <span>EGP</span></div>
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-period">All time</div>
+      </div>
+
+      <div class="stat-card rides">
+        <div class="stat-header">
+          <div class="stat-icon"><span class="material-icons">route</span></div>
+          <span class="growth-badge up">
+            <span class="material-icons">trending_up</span>
+            +{{ overview.ridesGrowth }}%
+          </span>
+        </div>
+        <div class="stat-value">{{ overview.totalRides | number }}</div>
+        <div class="stat-label">Total Rides</div>
+        <div class="stat-period">All time</div>
+      </div>
+
+      <div class="stat-card users">
+        <div class="stat-header">
+          <div class="stat-icon"><span class="material-icons">people</span></div>
+          <span class="growth-badge up">
+            <span class="material-icons">trending_up</span>
+            +{{ overview.usersGrowth }}%
+          </span>
+        </div>
+        <div class="stat-value">{{ overview.totalUsers | number }}</div>
+        <div class="stat-label">Total Users</div>
+        <div class="stat-period">Active accounts</div>
+      </div>
+
+      <div class="stat-card scooters">
+        <div class="stat-header">
+          <div class="stat-icon"><span class="material-icons">electric_scooter</span></div>
+          <span class="growth-badge up">
+            <span class="material-icons">trending_up</span>
+            +{{ overview.scootersGrowth }}%
+          </span>
+        </div>
+        <div class="stat-value">{{ overview.totalScooters | number }}</div>
+        <div class="stat-label">Total Scooters</div>
+        <div class="stat-period">Fleet size</div>
+      </div>
+    </div>
+
+    <!-- Revenue Chart -->
+    <div class="chart-card big">
+      <div class="chart-header">
+        <div>
+          <h3>Revenue Overview</h3>
+          <p>Track your earnings over time</p>
+        </div>
+        <div class="period-tabs">
+          <button
+            class="period-tab"
+            [class.active]="selectedPeriod === '7days'"
+            (click)="switchPeriod('7days')"
+          >Last 7 Days</button>
+          <button
+            class="period-tab"
+            [class.active]="selectedPeriod === '30days'"
+            (click)="switchPeriod('30days')"
+          >Last 30 Days</button>
+        </div>
+      </div>
+      <div class="chart-wrapper" style="height: 300px;">
+        <canvas
+          baseChart
+          [data]="revenueChartData"
+          [options]="revenueChartOptions"
+          [type]="'line'"
+        ></canvas>
+      </div>
+    </div>
+
+    <!-- Two Column Charts -->
+    <div class="charts-row">
+
+      <!-- Rides Status -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h3>Rides by Status</h3>
+            <p>Distribution of all rides</p>
+          </div>
+        </div>
+        <div class="chart-wrapper" style="height: 280px;">
+          <canvas
+            baseChart
+            [data]="ridesStatusChartData"
+            [options]="ridesStatusOptions"
+            [type]="'doughnut'"
+          ></canvas>
+        </div>
+      </div>
+
+      <!-- Scooters Status -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h3>Scooters by Status</h3>
+            <p>Fleet status breakdown</p>
+          </div>
+        </div>
+        <div class="chart-wrapper" style="height: 280px;">
+          <canvas
+            baseChart
+            [data]="scootersStatusChartData"
+            [options]="scootersStatusOptions"
+            [type]="'bar'"
+          ></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Peak Hours -->
+    <div class="chart-card big">
+      <div class="chart-header">
+        <div>
+          <h3>Peak Hours</h3>
+          <p>When are your scooters most active</p>
+        </div>
+      </div>
+      <div class="chart-wrapper" style="height: 240px;">
+        <canvas
+          baseChart
+          [data]="peakHoursChartData"
+          [options]="peakHoursOptions"
+          [type]="'bar'"
+        ></canvas>
+      </div>
+    </div>
+
+    <!-- Top Lists -->
+    <div class="charts-row">
+
+      <!-- Top Scooters -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h3>
+              <span class="material-icons">emoji_events</span>
+              Top Scooters
+            </h3>
+            <p>Best performing scooters by rides</p>
+          </div>
+        </div>
+        <div class="top-list">
+          @if (topScooters.length === 0) {
+            <div class="empty-state">
+              <span class="material-icons">inbox</span>
+              <p>No data available</p>
+            </div>
+          }
+          @for (scooter of topScooters; track scooter.serialNumber; let i = $index) {
+            <div class="top-item">
+              <span class="rank" [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2">
+                #{{ i + 1 }}
+              </span>
+              <div class="top-info">
+                <span class="top-name">{{ scooter.serialNumber }}</span>
+                <span class="top-meta">{{ scooter.rides }} rides</span>
+              </div>
+              <span class="top-value">{{ scooter.revenue }} EGP</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Top Users -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h3>
+              <span class="material-icons">stars</span>
+              Top Users
+            </h3>
+            <p>Most active riders</p>
+          </div>
+        </div>
+        <div class="top-list">
+          @if (topUsers.length === 0) {
+            <div class="empty-state">
+              <span class="material-icons">inbox</span>
+              <p>No data available</p>
+            </div>
+          }
+          @for (user of topUsers; track user.fullName; let i = $index) {
+            <div class="top-item">
+              <span class="rank" [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2">
+                #{{ i + 1 }}
+              </span>
+              <div class="top-info">
+                <span class="top-name">{{ user.fullName }}</span>
+                <span class="top-meta">{{ user.rides }} rides</span>
+              </div>
+              <span class="top-value">{{ user.totalSpent }} EGP</span>
+            </div>
+          }
+        </div>
+      </div>
+
+    </div>
+
+  }
+</div>

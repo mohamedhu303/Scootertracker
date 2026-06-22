@@ -1,0 +1,191 @@
+<div class="page-container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Users Management</h1>
+      <p>Manage registered users and verifications</p>
+    </div>
+    <div class="header-actions-row">
+      <app-export-menu [config]="exportConfig"></app-export-menu>
+      <div class="header-stats">
+        <div class="header-stat">
+          <span>{{ allUsersCount }}</span>
+          <p>Total Users</p>
+        </div>
+        <div class="header-stat active">
+          <span>{{ activeUsersCount }}</span>
+          <p>Active</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <div class="search-box">
+      <span class="material-icons">search</span>
+      <input
+        type="text"
+        placeholder="Search by name, email, phone..."
+        [(ngModel)]="searchTerm"
+        (input)="onSearch()"
+      />
+    </div>
+
+    <div class="filter-group">
+      <label>Status:</label>
+      <div class="filter-btns">
+        @for (status of statuses; track status) {
+          <button
+            class="filter-btn"
+            [class.active]="selectedStatus === status"
+            (click)="onStatusFilter(status)"
+          >
+            {{ status }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label>Verification:</label>
+      <div class="filter-btns">
+        @for (v of verifications; track v) {
+          <button
+            class="filter-btn"
+            [class.active]="selectedVerification === v"
+            (click)="onVerificationFilter(v)"
+          >
+            {{ v }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading users...</p>
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!isLoading) {
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Contact</th>
+            <th>Status</th>
+            <th>Verification</th>
+            <th>Wallet</th>
+            <th>Phone Verified</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (users.length === 0) {
+            <tr>
+              <td colspan="7" class="empty-row">
+                <span class="material-icons">person_search</span>
+                <p>No users found</p>
+              </td>
+            </tr>
+          }
+          @for (user of users; track user.id) {
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar">
+                    {{ user.fullName.charAt(0) }}
+                  </div>
+                  <div>
+                    <div class="user-name">{{ user.fullName }}</div>
+                    <div class="user-id">{{ user.id }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="contact-cell">
+                  <div class="email">{{ user.email }}</div>
+                  <div class="phone">{{ user.phoneNumber }}</div>
+                </div>
+              </td>
+              <td>
+                <span
+                  class="account-status"
+                  [class.active]="user.accountStatus === 'Active'"
+                  [class.suspended]="user.accountStatus === 'Suspended'"
+                >
+                  <span class="status-dot"></span>
+                  {{ user.accountStatus }}
+                </span>
+              </td>
+              <td>
+                <span
+                  class="verification-badge"
+                  [style.color]="getVerificationColor(user.idVerificationStatus)"
+                  [style.background]="getVerificationBg(user.idVerificationStatus)"
+                >
+                  <span class="material-icons">
+                    {{ getVerificationIcon(user.idVerificationStatus) }}
+                  </span>
+                  {{ user.idVerificationStatus }}
+                </span>
+              </td>
+              <td>
+                <span class="wallet-balance">
+                  {{ user.walletBalance | number:'1.2-2' }} EGP
+                </span>
+              </td>
+              <td>
+                @if (user.phoneVerified) {
+                  <span class="verified-badge">
+                    <span class="material-icons">check_circle</span>
+                    Verified
+                  </span>
+                } @else {
+                  <span class="not-verified-badge">
+                    <span class="material-icons">cancel</span>
+                    Not Verified
+                  </span>
+                }
+              </td>
+              <td>
+                <div class="actions">
+                  <button class="action-btn view" title="View Profile" (click)="viewUser(user)">
+                    <span class="material-icons">visibility</span>
+                  </button>
+                  <button
+                    class="action-btn"
+                    [class.suspend]="user.accountStatus === 'Active'"
+                    [class.activate]="user.accountStatus === 'Suspended'"
+                    [title]="user.accountStatus === 'Active' ? 'Suspend User' : 'Activate User'"
+                    (click)="toggleUserStatus(user)"
+                  >
+                    <span class="material-icons">
+                      {{ user.accountStatus === 'Active' ? 'block' : 'check_circle' }}
+                    </span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <app-pagination
+      [currentPage]="currentPage"
+      [pageSize]="pageSize"
+      [totalItems]="totalItems"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    ></app-pagination>
+  }
+
+</div>

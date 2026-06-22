@@ -1,0 +1,181 @@
+<div class="page-container">
+
+  <!-- Back Button -->
+  <button class="back-btn" (click)="goBack()">
+    <span class="material-icons">arrow_back</span>
+    Back to Scooters
+  </button>
+
+  <!-- Loading Skeleton -->
+  @if (isLoading) {
+    <app-skeleton type="detail" />
+  }
+
+  <!-- Scooter Details -->
+  @if (!isLoading && scooter) {
+    <div class="detail-header">
+      <div class="header-left">
+        <div class="scooter-icon-wrapper">
+          <span class="material-icons">electric_scooter</span>
+        </div>
+        <div>
+          <h1>{{ scooter.serialNumber }}</h1>
+          <p class="model-name">{{ scooter.modelName }}</p>
+          <span class="scooter-id">ID: {{ scooter.id }}</span>
+        </div>
+      </div>
+      <span
+        class="status-badge-lg"
+        [style.color]="getStatusColor(scooter.status)"
+        [style.background]="getStatusBg(scooter.status)"
+      >
+        {{ scooter.status }}
+      </span>
+    </div>
+
+    <!-- Info Cards -->
+    <div class="info-grid">
+      <!-- Battery -->
+      <div class="info-card">
+        <div class="info-card-header">
+          <span class="material-icons" [style.color]="getBatteryColor(scooter.batteryLevel)">
+            {{ getBatteryIcon(scooter.batteryLevel) }}
+          </span>
+          <span class="info-title">Battery Level</span>
+        </div>
+        <div class="battery-display">
+          <span class="battery-value" [style.color]="getBatteryColor(scooter.batteryLevel)">
+            {{ scooter.batteryLevel }}%
+          </span>
+          <div class="battery-bar-lg">
+            <div
+              class="battery-fill-lg"
+              [style.width.%]="scooter.batteryLevel"
+              [style.background]="getBatteryColor(scooter.batteryLevel)"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="info-card">
+        <div class="info-card-header">
+          <span class="material-icons" style="color: #6366f1">info</span>
+          <span class="info-title">Current Status</span>
+        </div>
+        <span
+          class="status-value"
+          [style.color]="getStatusColor(scooter.status)"
+        >
+          {{ scooter.status }}
+        </span>
+      </div>
+
+      <!-- Model -->
+      <div class="info-card">
+        <div class="info-card-header">
+          <span class="material-icons" style="color: #8b5cf6">category</span>
+          <span class="info-title">Model</span>
+        </div>
+        <span class="info-value">{{ scooter.modelName }}</span>
+      </div>
+
+      <!-- Serial -->
+      <div class="info-card">
+        <div class="info-card-header">
+          <span class="material-icons" style="color: #f59e0b">qr_code</span>
+          <span class="info-title">Serial Number</span>
+        </div>
+        <span class="info-value mono">{{ scooter.serialNumber }}</span>
+      </div>
+    </div>
+
+    <!-- Actions Panel -->
+    <div class="actions-panel">
+      <h3>
+        <span class="material-icons">settings</span>
+        Scooter Actions
+      </h3>
+
+      <div class="actions-grid">
+        <!-- Unlock -->
+        <button
+          class="action-card unlock"
+          (click)="performAction('unlock', 'Unlock')"
+          [disabled]="actionLoading !== null"
+          [class.loading]="actionLoading === 'unlock'"
+        >
+          <span class="material-icons">lock_open</span>
+          <span class="action-label">Unlock</span>
+          <span class="action-desc">Remotely unlock the scooter</span>
+        </button>
+
+        <!-- Lock -->
+        <button
+          class="action-card lock"
+          (click)="performAction('lock', 'Lock')"
+          [disabled]="actionLoading !== null"
+          [class.loading]="actionLoading === 'lock'"
+        >
+          <span class="material-icons">lock</span>
+          <span class="action-label">Lock</span>
+          <span class="action-desc">Remotely lock the scooter</span>
+        </button>
+
+        <!-- Maintenance -->
+        <button
+          class="action-card maintenance"
+          (click)="performAction('maintenance', 'Set Maintenance')"
+          [disabled]="actionLoading !== null"
+          [class.loading]="actionLoading === 'maintenance'"
+        >
+          <span class="material-icons">build</span>
+          <span class="action-label">Maintenance</span>
+          <span class="action-desc">Mark for maintenance</span>
+        </button>
+
+        <!-- Ping -->
+        <button
+          class="action-card ping"
+          (click)="performAction('ping', 'Ping')"
+          [disabled]="actionLoading !== null"
+          [class.loading]="actionLoading === 'ping'"
+        >
+          <span class="material-icons">cell_tower</span>
+          <span class="action-label">Ping</span>
+          <span class="action-desc">Send ping signal</span>
+        </button>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="danger-zone">
+        <h4>
+          <span class="material-icons">warning</span>
+          Danger Zone
+        </h4>
+        <button
+          class="retire-btn"
+          (click)="retireScooter()"
+          [disabled]="actionLoading !== null"
+        >
+          <span class="material-icons">delete_forever</span>
+          Retire Scooter
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Not Found -->
+  @if (!isLoading && !scooter) {
+    <div class="not-found">
+      <span class="material-icons">search_off</span>
+      <h3>Scooter not found</h3>
+      <p>The scooter you're looking for doesn't exist.</p>
+      <button class="back-link" (click)="goBack()">
+        <span class="material-icons">arrow_back</span>
+        Back to Scooters
+      </button>
+    </div>
+  }
+
+</div>
